@@ -192,6 +192,27 @@ OllamaAPI >> port: anObject [
 ]
 
 { #category : 'api' }
+OllamaAPI >> prequery: aTextQuery [
+
+    | paramDic optionsDic |
+    paramDic := Dictionary new.
+    paramDic at: #model put: self model fullName.
+    paramDic at: #prompt put: (self buildQuery: aTextQuery).
+    paramDic at: #stream put: self stream.
+    self format ifNotNil: [ :f | paramDic at: #format put: f ].
+    self addParameterTo: paramDic.
+
+    self num_ctx ifNotNil: [
+        optionsDic := Dictionary new.
+        optionsDic at: #num_ctx put: self num_ctx.
+        paramDic at: #options put: optionsDic.
+    ].
+
+    ^ paramDic
+
+]
+
+{ #category : 'api' }
 OllamaAPI >> pull [
 	"Pull the model linked to this API"
 
@@ -211,7 +232,7 @@ OllamaAPI >> pull [
 { #category : 'api' }
 OllamaAPI >> query: aTextQuery [
 
-	| znClient paramDic writer optionsDic |
+	| znClient  writer  |
 	znClient := ZnClient new.
 	writer := ZnUtils defaultJSONWriter.
 	znClient
@@ -221,18 +242,8 @@ OllamaAPI >> query: aTextQuery [
 	znClient port: self port.
 	znClient path: 'api/generate'.
 
-	paramDic := Dictionary new.
-	paramDic at: #model put: self model fullName.
-	paramDic at: #prompt put: (self buildQuery: aTextQuery).
-	paramDic at: #stream put: self stream.
-	self format ifNotNil: [ :f | paramDic at: #format put: f ].
-	self addParameterTo: paramDic.
 
-	optionsDic := Dictionary new.
-	optionsDic at: #num_ctx put: self num_ctx.
-	paramDic at: #options put: optionsDic.
-
-	znClient contents: paramDic.
+	znClient contents: (self prequery: aTextQuery).
 
 	self stream 
     	ifTrue: [
