@@ -6,7 +6,7 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-OCodeStral class >> codestral22b [
+OCodeStral class >> codestr
 
 	<ollamaInit: 'codestral:22b'>
 	^ self new
